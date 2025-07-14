@@ -73,4 +73,37 @@ export default function CustomAnalysis({ dateRange }: CustomAnalysisProps) {
         data: [
           { category: "Food & Dining", total_amount: 2340.5, transaction_count: 45, avg_amount: 52.01 },
           { category: "Transportation", total_amount: 1850.25, transaction_count: 28, avg_amount: 66.08 },
-          { category: "Shopping", total_amount: 1420.75, transaction_count: 32, avg_amount: 44.
+          { category: "Shopping", total_amount: 1420.75, transaction_count: 32, avg_amount: 44.40 },
+          { category: "Entertainment", total_amount: 980.30, transaction_count: 18, avg_amount: 54.46 },
+          { category: "Utilities", total_amount: 750.00, transaction_count: 12, avg_amount: 62.50 },
+        ],
+      }
+
+      setResults(mockResults)
+      setIsRunning(false)
+    }, 2000)
+  }
+
+  const saveAnalysis = () => {
+    if (analysisName.trim()) {
+      setSavedAnalyses([
+        ...savedAnalyses,
+        {
+          id: Date.now(),
+          name: analysisName,
+          lastRun: new Date().toISOString().split('T')[0],
+        },
+      ])
+      setAnalysisName("")
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">Custom Analysis Builder</h2>
+        <p className="text-gray-600 mt-2">Create custom queries and analysis for your transaction data</p>
+      </div>
+    </div>
+  )
+}
