@@ -62,7 +62,7 @@ LIMIT 10`,
     const startTime = Date.now()
 
     try {
-      const response = await fetch('http://k8s-default-apiingre-e27345915c-694881870.ap-southeast-1.elb.amazonaws.com/calculation', {
+      const response = await fetch('https://k8s-default-apiingre-e27345915c-694881870.ap-southeast-1.elb.amazonaws.com/calculation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
