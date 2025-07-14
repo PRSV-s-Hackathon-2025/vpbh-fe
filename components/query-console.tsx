@@ -220,10 +220,10 @@ LIMIT 10`,
 
       {/* Results and Performance */}
       <Tabs defaultValue="results" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="results" className="text-xs sm:text-sm">Results</TabsTrigger>
-          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
-          <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
+        <TabsList className="flex w-full sm:grid sm:grid-cols-3 overflow-x-auto">
+          <TabsTrigger value="results" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Results</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">Performance</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results">
