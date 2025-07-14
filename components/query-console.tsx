@@ -145,9 +145,9 @@ LIMIT 10`,
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <label className="text-sm font-medium">SQL Query</label>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {sampleQueries.map((sample, index) => (
                   <Button
                     key={index}
@@ -155,6 +155,7 @@ LIMIT 10`,
                     size="sm"
                     onClick={() => setQuery(sample.query)}
                     disabled={isExecuting}
+                    className="text-xs sm:text-sm"
                   >
                     {sample.name}
                   </Button>
@@ -165,17 +166,17 @@ LIMIT 10`,
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Enter your SQL query here..."
-              className="min-h-[200px] font-mono text-sm"
+              className="min-h-[150px] sm:min-h-[200px] font-mono text-sm"
               disabled={isExecuting}
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <Button
                 onClick={executeQuery}
                 disabled={!canExecuteQuery || isExecuting}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 w-full sm:w-auto"
               >
                 {isExecuting ? (
                   <>
@@ -193,12 +194,13 @@ LIMIT 10`,
               {executionTime && (
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <Zap className="h-4 w-4" />
-                  <span>Last execution: {executionTime}ms</span>
+                  <span className="hidden sm:inline">Last execution: </span>
+                  <span>{executionTime}ms</span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center sm:justify-end">
               <Badge variant={canExecuteQuery ? "default" : "secondary"}>
                 {canExecuteQuery ? "Ready" : "Not Ready"}
               </Badge>
@@ -219,9 +221,9 @@ LIMIT 10`,
       {/* Results and Performance */}
       <Tabs defaultValue="results" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="results">Query Results</TabsTrigger>
-          <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
-          <TabsTrigger value="history">Query History</TabsTrigger>
+          <TabsTrigger value="results" className="text-xs sm:text-sm">Results</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results">
@@ -244,12 +246,12 @@ LIMIT 10`,
               ) : (
                 <div className="space-y-3">
                   {queryHistory.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <p className="text-sm font-mono text-gray-800">{item.query}</p>
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-mono text-gray-800 break-all">{item.query}</p>
                         <p className="text-xs text-gray-500 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
                       </div>
-                      <div className="flex items-center space-x-4 text-sm">
+                      <div className="flex items-center justify-between sm:justify-end space-x-4 text-sm">
                         <span className="text-gray-600">{item.rowCount} rows</span>
                         <Badge variant="outline">{item.executionTime}ms</Badge>
                       </div>

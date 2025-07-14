@@ -83,7 +83,7 @@ export default function QueryResults({ results, isLoading }: QueryResultsProps) 
           <span>Query Results</span>
         </CardTitle>
         <CardDescription>
-          <div className="flex items-center space-x-4 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2">
             <Badge variant="outline">{results.rowCount} rows</Badge>
             <Badge variant="outline">{results.executionTime}ms</Badge>
             <Badge variant="outline">{results.columns.length} columns</Badge>
@@ -91,29 +91,31 @@ export default function QueryResults({ results, isLoading }: QueryResultsProps) 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {results.columns.map((column: string, index: number) => (
-                  <TableHead key={index} className="font-semibold">
-                    {column}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.rows.map((row: any[], rowIndex: number) => (
-                <TableRow key={rowIndex}>
-                  {row.map((cell: any, cellIndex: number) => (
-                    <TableCell key={cellIndex} className="font-mono text-sm">
-                      {typeof cell === "string" && cell.length > 50 ? `${cell.substring(0, 50)}...` : String(cell)}
-                    </TableCell>
+        <ScrollArea className="h-[300px] sm:h-[400px] w-full">
+          <div className="overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  {results.columns.map((column: string, index: number) => (
+                    <TableHead key={index} className="font-semibold whitespace-nowrap">
+                      {column}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {results.rows.map((row: any[], rowIndex: number) => (
+                  <TableRow key={rowIndex}>
+                    {row.map((cell: any, cellIndex: number) => (
+                      <TableCell key={cellIndex} className="font-mono text-xs sm:text-sm whitespace-nowrap">
+                        {typeof cell === "string" && cell.length > 30 ? `${cell.substring(0, 30)}...` : String(cell)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       </CardContent>
     </Card>
