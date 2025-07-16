@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, AlertCircle, Database, Folder } from "lucide-react"
+import { CheckCircle, AlertCircle, Database, Folder, Key, RefreshCw } from "lucide-react"
 
 interface DataSourceConfigProps {
   credentials: any
@@ -20,6 +20,14 @@ interface DataSourceConfigProps {
 }
 
 export default function DataSourceConfig({ credentials, onDataSourceSet, dataSource }: DataSourceConfigProps) {
+  const [awsCredentials, setAwsCredentials] = useState({
+    accessKeyId: "",
+    secretAccessKey: "",
+    region: "us-east-1"
+  })
+  const [s3Buckets, setS3Buckets] = useState<Array<{name: string, creationDate?: Date}>>([])
+  const [isLoadingBuckets, setIsLoadingBuckets] = useState(false)
+  const [awsSessionConfigured, setAwsSessionConfigured] = useState(false)
   const [formData, setFormData] = useState({
     s3Bucket: "",
     s3Prefix: "",
@@ -32,10 +40,38 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
   const [isValidating, setIsValidating] = useState(false)
   const [validationStatus, setValidationStatus] = useState<"idle" | "success" | "error">("idle")
 
+  const configureAwsSession = async () => {
+    if (!awsCredentials.accessKeyId || !awsCredentials.secretAccessKey) {
+      alert("Please provide AWS access key and secret key")
+      return
+    }
+
+    setIsLoadingBuckets(true)
+    try {
+      const response = await fetch('/api/s3/buckets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(awsCredentials)
+      })
+      
+      const data = await response.json()
+      if (response.ok) {
+        setS3Buckets(data.buckets)
+        setAwsSessionConfigured(true)
+      } else {
+        alert(data.error || 'Failed to configure AWS session')
+      }
+    } catch (error) {
+      alert('Error configuring AWS session')
+    } finally {
+      setIsLoadingBuckets(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!credentials) {
-      alert("Please configure AWS credentials first")
+    if (!awsSessionConfigured) {
+      alert("Please configure AWS session first")
       return
     }
 
@@ -56,11 +92,82 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
 
   return (
     <div className="space-y-6">
-      {!credentials && (
+      {/* AWS Session Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Key className="h-5 w-5" />
+            <span>AWS Session Configuration</span>
+          </CardTitle>
+          <CardDescription>Configure AWS credentials to access S3 buckets</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="accessKeyId">Access Key ID *</Label>
+              <Input
+                id="accessKeyId"
+                type="password"
+                placeholder="AKIA..."
+                value={awsCredentials.accessKeyId}
+                onChange={(e) => setAwsCredentials(prev => ({ ...prev, accessKeyId: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="secretAccessKey">Secret Access Key *</Label>
+              <Input
+                id="secretAccessKey"
+                type="password"
+                placeholder="Secret key"
+                value={awsCredentials.secretAccessKey}
+                onChange={(e) => setAwsCredentials(prev => ({ ...prev, secretAccessKey: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="region">AWS Region</Label>
+            <Select
+              value={awsCredentials.region}
+              onValueChange={(value) => setAwsCredentials(prev => ({ ...prev, region: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="us-east-1">US East (N. Virginia)</SelectItem>
+                <SelectItem value="us-west-2">US West (Oregon)</SelectItem>
+                <SelectItem value="eu-west-1">Europe (Ireland)</SelectItem>
+                <SelectItem value="ap-southeast-1">Asia Pacific (Singapore)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button 
+            onClick={configureAwsSession} 
+            disabled={isLoadingBuckets}
+            className="w-full"
+          >
+            {isLoadingBuckets ? (
+              <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Loading Buckets...</>
+            ) : (
+              "Configure AWS Session"
+            )}
+          </Button>
+          {awsSessionConfigured && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                AWS session configured successfully! Found {s3Buckets.length} buckets.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {!awsSessionConfigured && (
         <Alert className="border-yellow-200 bg-yellow-50">
           <AlertCircle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="text-yellow-800">
-            Please configure AWS credentials first before setting up data sources.
+            Please configure AWS session first before setting up data sources.
           </AlertDescription>
         </Alert>
       )}
@@ -78,13 +185,22 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="s3Bucket">S3 Bucket Name *</Label>
-              <Input
-                id="s3Bucket"
-                placeholder="my-data-bucket"
+              <Select
                 value={formData.s3Bucket}
-                onChange={(e) => setFormData((prev) => ({ ...prev, s3Bucket: e.target.value }))}
-                disabled={!credentials}
-              />
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, s3Bucket: value }))}
+                disabled={!awsSessionConfigured}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={awsSessionConfigured ? "Select a bucket" : "Configure AWS session first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {s3Buckets.map((bucket) => (
+                    <SelectItem key={bucket.name} value={bucket.name || ""}>
+                      {bucket.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -94,7 +210,7 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
                 placeholder="data/clickhouse/"
                 value={formData.s3Prefix}
                 onChange={(e) => setFormData((prev) => ({ ...prev, s3Prefix: e.target.value }))}
-                disabled={!credentials}
+                disabled={!awsSessionConfigured}
               />
             </div>
 
@@ -105,7 +221,7 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
                 placeholder="arn:aws:s3:::my-data-bucket/data/clickhouse/*"
                 value={formData.s3Arn}
                 onChange={(e) => setFormData((prev) => ({ ...prev, s3Arn: e.target.value }))}
-                disabled={!credentials}
+                disabled={!awsSessionConfigured}
                 rows={2}
               />
             </div>
@@ -115,7 +231,7 @@ export default function DataSourceConfig({ credentials, onDataSourceSet, dataSou
               <Select
                 value={formData.dataFormat}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, dataFormat: value }))}
-                disabled={!credentials}
+                disabled={!awsSessionConfigured}
               >
                 <SelectTrigger>
                   <SelectValue />

@@ -6,15 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Database, Settings, Activity, Play } from "lucide-react"
 import CredentialsForm from "@/components/credentials-form"
-import DataSourceConfig from "@/components/data-source-config"
 import PipelineConsole from "@/components/pipeline-console"
 import QueryConsole from "@/components/query-console"
 
 export default function DatabaseBenchmark() {
   const [activeTab, setActiveTab] = useState("credentials")
   const [credentials, setCredentials] = useState(null)
-  const [dataSource, setDataSource] = useState(null)
   const [pipelineStatus, setPipelineStatus] = useState("idle")
+  const [dataSource, setDataSource] = useState(null)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -52,7 +51,7 @@ export default function DatabaseBenchmark() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="flex w-full sm:grid sm:grid-cols-4 bg-white border border-gray-200 shadow-sm overflow-x-auto">
+          <TabsList className="flex w-full sm:grid sm:grid-cols-3 bg-white border border-gray-200 shadow-sm overflow-x-auto">
             <TabsTrigger
               value="credentials"
               className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:bg-orange-50 data-[state=active]:text-orange-700 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
@@ -60,14 +59,6 @@ export default function DatabaseBenchmark() {
               <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">AWS Credentials</span>
               <span className="sm:hidden">AWS</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="datasource"
-              className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:bg-orange-50 data-[state=active]:text-orange-700 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
-            >
-              <Database className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Data Source</span>
-              <span className="sm:hidden">Data</span>
             </TabsTrigger>
             <TabsTrigger
               value="pipeline"
@@ -101,31 +92,18 @@ export default function DatabaseBenchmark() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="datasource" className="space-y-6">
-            <Card className="bg-white border-gray-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-gray-900">S3 Data Source Configuration</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Configure your S3 data sources for ClickHouse integration
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataSourceConfig credentials={credentials} onDataSourceSet={setDataSource} dataSource={dataSource} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           <TabsContent value="pipeline" className="space-y-6">
             <PipelineConsole
               credentials={credentials}
               dataSource={dataSource}
               onStatusChange={setPipelineStatus}
               status={pipelineStatus}
+              awsSession={credentials}
             />
           </TabsContent>
 
           <TabsContent value="query" className="space-y-6">
-            <QueryConsole credentials={credentials} dataSource={dataSource} pipelineStatus={pipelineStatus} />
+            <QueryConsole credentials={credentials} pipelineStatus={pipelineStatus} />
           </TabsContent>
         </Tabs>
       </div>

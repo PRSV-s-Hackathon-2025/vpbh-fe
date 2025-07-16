@@ -13,11 +13,10 @@ import PerformanceChart from "@/components/performance-chart"
 
 interface QueryConsoleProps {
   credentials: any
-  dataSource: any
-  pipelineStatus: string
+  pipelineStatus?: string
 }
 
-export default function QueryConsole({ credentials, dataSource, pipelineStatus }: QueryConsoleProps) {
+export default function QueryConsole({ credentials, pipelineStatus }: QueryConsoleProps) {
   const [query, setQuery] = useState(`SELECT COUNT(*) FROM transactions.daily_transactions`)
 
   const [isExecuting, setIsExecuting] = useState(false)
